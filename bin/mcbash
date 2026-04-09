@@ -24,16 +24,30 @@ done
 
 # Loading config file
 config_file=$HOME/.mcbash/mcbash.conf
+system_config_file=/etc/mcbash.conf
+script_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+project_config_file="$script_dir/../mcbash.conf"
 
 if [[ -f $config_file ]]; then
 	source "$config_file"
+elif [[ -f $system_config_file ]]; then
+	source "$system_config_file"
+elif [[ -f $project_config_file ]]; then
+	source "$project_config_file"
 else
-	if [[ -f "/etc/mcbash.conf" ]]; then
-		source "/etc/mcbash.conf"
-	else
-		echo -e "Config file not found. This can cause weird behaviors.\nmcbash.conf should be placed here : $config_file"
-	fi
+	echo -e "Config file not found. Falling back to embedded defaults.\nmcbash.conf should be placed here : $config_file"
 fi
+
+# Embedded fallback defaults (used when config file is missing or incomplete)
+: "${destination:=$HOME/.mcbash}"
+: "${default_request_delay:=2}"
+: "${default_timebreak:=0}"
+: "${default_timebreak_duration:=10}"
+: "${default_stopping:=0}"
+: "${default_timeout:=5}"
+: "${default_first_mac:=00:1A:79:00:00:00}"
+: "${default_last_mac:=00:1A:79:FF:FF:FF}"
+: "${avoid_parameters:=false}"
 
 [ -d $destination ] || mkdir -p "$destination" &> /dev/null || \
 	echo -e "${_BLUE}Can't create saving directory to $destination.\nPlease be sure you have permissions.\nValid MAC addresses will not be stored.${_RESET}"
